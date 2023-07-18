@@ -11,6 +11,7 @@ public class AkkaQuickstart {
 
     //#main-send-messages
     greeterMain.tell(new GreeterMain.SayHello("Charles"));
+    greeterMain.tell(new GreeterMain.SayHello("StoCazzo"));
     //#main-send-messages
 
     try {
