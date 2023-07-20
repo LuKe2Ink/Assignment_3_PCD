@@ -1,0 +1,62 @@
+JFDML JFormDesigner: "8.0.4.0.266" Java: "17.0.6" encoding: "UTF-8"
+
+new FormModel {
+	contentType: "form/swing"
+	root: new FormRoot {
+		add( new FormWindow( "javax.swing.JFrame", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+			"$horizontalGroup": "par l {seq l {space :p:19:p, par l {comp label1::l:p::p, seq l {par t:::p {comp maxLine::l:::x, comp label3::l:p::p, comp label4::l:p::p, comp nfile::t:::x, comp interval::t:::x, comp pause::t:::x, comp resume::t:::x, comp start::t:::x}, space :p:27:p, comp map:::p:316:p, space :p:42:p, comp scrollPane1:::p:177:p}}, space ::39:x}}"
+			"$verticalGroup": "par l {seq l {space :p:20:p, comp label1:::p::p, space :p:4:p, par l {seq {comp maxLine:::p::p, space :::p, par l {seq {comp label3:::p::p, space :::p, comp interval:::p::p, space :::p, comp label4:::p::p, space :::p, comp nfile:::p::p, space s:::p, comp start:::p::p, space :::p, comp resume:::p::p, space :::p, comp pause:::p::p}, seq l {space :p:1:p, comp scrollPane1:::p:175:p}}}, comp map:::::x}, space ::33:x}}"
+		} ) {
+			name: "this"
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "start"
+				"text": "Start"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "resume"
+				"text": "Resume"
+			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "pause"
+				"text": "Pause"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "maxLine"
+				"text": "7450"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "interval"
+				"text": "6"
+			} )
+			add( new FormComponent( "javax.swing.JTextField" ) {
+				name: "nfile"
+				"text": "3"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label1"
+				"text": "Max Lines"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "map"
+				"text": "Mappa"
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JList" ) {
+					name: "maxFiles"
+				} )
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label3"
+				"text": "Intervals"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label4"
+				"text": "N° Files"
+			} )
+		}, new FormLayoutConstraints( null ) {
+			"location": new java.awt.Point( 5, 20 )
+			"size": new java.awt.Dimension( 700, 370 )
+		} )
+	}
+}
