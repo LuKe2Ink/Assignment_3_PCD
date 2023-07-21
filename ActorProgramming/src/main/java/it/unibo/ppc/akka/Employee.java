@@ -1,22 +1,20 @@
-package it.unibo.ppc;
+package it.unibo.ppc.akka;
 
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Receive;
-import akka.actor.typed.scaladsl.Behaviors;
-import it.unibo.ppc.Boss.SayMyName;
-import it.unibo.ppc.Pm.Ordered;
+import it.unibo.ppc.akka.Pm.Ordered;
+import akka.actor.typed.javadsl.Behaviors;
 
 public class Employee extends AbstractBehavior<Pm.Ordered>{
 
-    private Employee(ActorContext<Ordered> context, int number) {
+    private Employee(ActorContext<Ordered> context) {
         super(context);
-        this.name = "Employee: " + String.valueOf(number);
     }
 
-    public static Behavior<Pm.Ordered> create(int number){
-        return Behaviors.setup(context -> new Employee(context, number));
+    public static Behavior<Pm.Ordered> create(){
+        return Behaviors.setup(context -> new Employee(context));
     }
 
     private String name;
@@ -27,7 +25,7 @@ public class Employee extends AbstractBehavior<Pm.Ordered>{
     }
     
     private Behavior<Pm.Ordered> onMsgReceived(Pm.Ordered message){
-        getContext().getLog().info("Got it Boss -{}", this.name, getContext(), getClass());
+        getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
         return this;
     }
 }

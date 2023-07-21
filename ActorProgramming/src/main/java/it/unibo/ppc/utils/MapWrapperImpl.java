@@ -1,24 +1,19 @@
-package it.unibo.ppc.utilities;
+package it.unibo.ppc.utils;
 
-import it.unibo.ppc.gui.GUIResponsive;
+
 import it.unibo.ppc.interfaces.MapWrapper;
-import it.unibo.ppc.utils.RangeClass;
-import it.unibo.ppc.utils.Settings;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class MapWrapperImplGUI<T extends Number> implements MapWrapper {
+public class MapWrapperImpl<T extends Number> implements MapWrapper {
     private Settings settings;
     private Map<String, Integer> listLongerFiles;
     private Map<RangeClass, T> map;
-
-    private GUIResponsive guiResponsive;
-    public MapWrapperImplGUI(Settings settings, GUIResponsive guiResponsive) {
+    public MapWrapperImpl(Settings settings) {
         this.settings = settings;
-        this.guiResponsive = guiResponsive;
         buildMap(settings.getIntervals(), settings.getMaxLines());
     }
 
@@ -39,13 +34,11 @@ public class MapWrapperImplGUI<T extends Number> implements MapWrapper {
     public void updateMap(Number data) {
         RangeClass k = map.keySet().stream().filter(x -> x.inRange((Integer) data)).collect(Collectors.toList()).get(0);//.map(p -> p.setValue(p.getValue() + 1));
         map.replace(k, this.increment(map.get(k)));
-        guiResponsive.updateCountValue(this.fancyMap());
     }
 
     @Override
     public void updateList(String path, Number data) {
         listLongerFiles.putIfAbsent(path, (int)data);
-        guiResponsive.updateList(this.getLongerFiles());
     }
 
     @Override
@@ -58,19 +51,23 @@ public class MapWrapperImplGUI<T extends Number> implements MapWrapper {
         return listLongerFiles.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .limit(this.settings.getnFiles())
-                .map(Map.Entry::getKey)
-                .map(path -> path.split("nested")[1])
+                  .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
+//        return listLongerFiles.entrySet()
+//                .stream()
+//                .sorted()
+//                .limit(this.settings.getnFiles())
+//                .map(tStringEntry -> tStringEntry.getValue())
+//                .collect(Collectors.toList());
     }
 
     @Override
     public String fancyMap() {
-        String fancy = "<html>";
+        String fancy = "\n";
         for (RangeClass rc:
-                this.map.keySet()) {
-            fancy += "range " + rc.toString() + " has " + this.map.get(rc) + " files <br /><br />";
+             this.map.keySet()) {
+            fancy += "range " + rc.toString() + " has " + this.map.get(rc) + " files\n";
         }
-        fancy += "<html>";
         return fancy;
     }
 

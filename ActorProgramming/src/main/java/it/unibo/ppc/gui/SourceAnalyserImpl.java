@@ -1,9 +1,12 @@
-package it.unibo.ppc.utilities;
+package it.unibo.ppc.gui;
 
-import it.unibo.ppc.gui.GUIResponsive;
 import it.unibo.ppc.interfaces.SourceAnalyser;
+import it.unibo.ppc.utilities.Continue;
+import it.unibo.ppc.utilities.FileService;
+import it.unibo.ppc.utilities.FileServiceStoppable;
+import it.unibo.ppc.utilities.Flag;
+import it.unibo.ppc.utilities.MapWrapperImplGUI;
 import it.unibo.ppc.interfaces.MapWrapper;
-import it.unibo.ppc.interfaces.SourceAnalyser;
 import it.unibo.ppc.utils.MapWrapperImpl;
 import it.unibo.ppc.utils.Settings;
 
@@ -11,9 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
 import static it.unibo.ppc.utilities.Utils.*;
 
 public class SourceAnalyserImpl implements SourceAnalyser {

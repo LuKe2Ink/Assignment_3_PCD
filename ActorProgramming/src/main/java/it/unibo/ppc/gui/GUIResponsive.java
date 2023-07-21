@@ -8,7 +8,6 @@ import it.unibo.ppc.interfaces.SourceAnalyser;
 import it.unibo.ppc.utilities.Continue;
 import it.unibo.ppc.utilities.Flag;
 import it.unibo.ppc.utilities.MapWrapperImplGUI;
-import it.unibo.ppc.utilities.SourceAnalyserImpl;
 import it.unibo.ppc.utils.Settings;
 
 import javax.swing.*;

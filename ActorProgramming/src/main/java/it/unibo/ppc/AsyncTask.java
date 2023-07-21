@@ -1,8 +1,8 @@
 package it.unibo.ppc;
 
-import it.unibo.pc.gui.GUIResponsive;
-import it.unibo.pc.interfaces.SourceAnalyser;
-import it.unibo.pc.utilities.SourceAnalyserImpl;
+import it.unibo.ppc.gui.GUIResponsive;
+import it.unibo.ppc.gui.SourceAnalyserImpl;
+import it.unibo.ppc.interfaces.SourceAnalyser;
 import it.unibo.ppc.utils.Settings;
 
 import javax.swing.*;

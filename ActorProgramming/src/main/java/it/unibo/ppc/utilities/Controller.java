@@ -1,6 +1,6 @@
 package it.unibo.ppc.utilities;
 
-import it.unibo.pc.gui.GUIResponsive;
+import it.unibo.ppc.gui.GUIResponsive;
 import it.unibo.ppc.utils.RangeClass;
 
 import java.util.HashMap;
