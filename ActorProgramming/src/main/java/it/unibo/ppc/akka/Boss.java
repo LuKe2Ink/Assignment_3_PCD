@@ -2,6 +2,8 @@ package it.unibo.ppc.akka;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -10,14 +12,14 @@ import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
+import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import it.unibo.ppc.utilities.Utils;
-import akka.actor.typed.javadsl.Behaviors;
-
 
 public class Boss extends AbstractBehavior<Boss.FileReadingTask> {
 
-    private final static int NUMBER_OF_WORKERS = 15;
+    private final static int NUMBER_OF_WORKERS = 7;
+
     public Boss(ActorContext<FileReadingTask> context) {
         super(context);
         worker = context.spawn(Pm.create(), "Pm");
@@ -34,7 +36,7 @@ public class Boss extends AbstractBehavior<Boss.FileReadingTask> {
     public static class FileReadingTask {
         public final String directoryPath;
         private List<String> pathList = new ArrayList<>();
-        public final List<List<String>> tasks = new ArrayList<>(NUMBER_OF_WORKERS);
+        public final Collection<List<String>> tasks;
 
         public FileReadingTask(String directoryPath) {
             this.directoryPath = directoryPath;
@@ -43,11 +45,17 @@ public class Boss extends AbstractBehavior<Boss.FileReadingTask> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            System.out.println(pathList.toString());
-        }
-        
-    }
 
+            Collections.shuffle(pathList);
+
+            int partitionSize = (int) pathList.size() / NUMBER_OF_WORKERS;
+            this.tasks =  IntStream.range(0, pathList.size())
+                    .boxed()
+                    .collect(Collectors.groupingBy(partition -> (partition % partitionSize),
+                            Collectors.mapping(elementIndex -> pathList.get(elementIndex), Collectors.toList())))
+                    .values();
+        }
+    }
 
     private final ActorRef<Pm.Order> worker;
 
@@ -65,10 +73,10 @@ public class Boss extends AbstractBehavior<Boss.FileReadingTask> {
 
     private Behavior<FileReadingTask> onStart(FileReadingTask command) {
         // TODO qui manca qualcosa che nel format original e cera
-        List<ActorRef<Pm.Ordered>> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(numberId -> 
-            getContext().spawn(Employee.create(),Employee.class.getName() + String.valueOf(numberId))
-        ).collect(Collectors.toList());
-        worker.tell(new Pm.Order(command.directoryPath, replyTo));
+        List<ActorRef<Pm.Ordered>> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
+                numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
+                .collect(Collectors.toList());
+        worker.tell(new Pm.Order(command.directoryPath, replyTo, command.tasks));
         return this;
     }
 }

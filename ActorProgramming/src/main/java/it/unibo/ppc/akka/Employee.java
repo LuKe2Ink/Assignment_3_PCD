@@ -25,7 +25,8 @@ public class Employee extends AbstractBehavior<Pm.Ordered>{
     }
     
     private Behavior<Pm.Ordered> onMsgReceived(Pm.Ordered message){
-        getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
+        getContext().getLog().info("Gonna mess around wtih: " + message.task);
+        // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
         return this;
     }
 }

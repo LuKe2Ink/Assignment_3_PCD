@@ -1,5 +1,6 @@
 package it.unibo.ppc.akka;
 
+import java.util.Collection;
 import java.util.List;
 
 import akka.actor.typed.ActorRef;
@@ -9,7 +10,7 @@ import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 
-public class Pm extends AbstractBehavior<Pm.Order>{
+public class Pm extends AbstractBehavior<Pm.Order> {
     public Pm(ActorContext<Order> context) {
         super(context);
     }
@@ -17,20 +18,24 @@ public class Pm extends AbstractBehavior<Pm.Order>{
     public static final class Order {
         public final String whom;
         public final List<ActorRef<Ordered>> replyTo;
+        public Collection<List<String>> tasks;
 
-        public Order(String whom, List<ActorRef<Ordered>> replyTo) {
-        this.whom = whom;
-        this.replyTo = replyTo;
+        public Order(String whom, List<ActorRef<Ordered>> replyTo, Collection<List<String>> tasks) {
+            this.whom = whom;
+            this.replyTo = replyTo;
+            this.tasks = tasks;
         }
     }
 
     public static final class Ordered {
         public final String whom;
         public final ActorRef<Order> from;
+        public List<String> task;
 
-        public Ordered(String whom, ActorRef<Order> from) {
-        this.whom = whom;
-        this.from = from;
+        public Ordered(String whom, ActorRef<Order> from, List<String> task) {
+            this.whom = whom;
+            this.from = from;
+            this.task = task;
         }
 
         @Override
@@ -68,10 +73,9 @@ public class Pm extends AbstractBehavior<Pm.Order>{
         public String toString() {
             return "Ordered [whom=" + whom + ", from=" + from + "]";
         }
-        
-        
+
     }
-    
+
     public static Behavior<Order> create() {
         return Behaviors.setup(Pm::new);
     }
@@ -80,13 +84,14 @@ public class Pm extends AbstractBehavior<Pm.Order>{
     public Receive<Order> createReceive() {
         return newReceiveBuilder().onMessage(Order.class, this::onOrder).build();
     }
-    
+
     private Behavior<Order> onOrder(Order command) {
         getContext().getLog().info("Received an order from {}!", command.whom);
-        //#greeter-send-message
+        // #greeter-send-message
         // command.replyTo.tell(new Ordered(command.whom, getContext().getSelf()));
-        command.replyTo.forEach(replier -> replier.tell(new Ordered(command.whom, getContext().getSelf())));
-        //#greeter-send-message
+        command.replyTo.forEach(replier -> replier.tell(new Ordered(command.whom, getContext().getSelf(),
+                command.tasks.stream().toList().get(command.replyTo.indexOf(replier)))));
+        // #greeter-send-message
         return this;
-  }
+    }
 }

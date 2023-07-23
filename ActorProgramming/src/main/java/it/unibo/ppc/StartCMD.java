@@ -10,7 +10,7 @@ public class StartCMD {
         System.out.println("Hello world! from commandLIne");
         final ActorSystem<Boss.FileReadingTask> greeterMain = ActorSystem.create(Boss.create(), "helloakka");
 
-        greeterMain.tell(new Boss.FileReadingTask("src"));
+        greeterMain.tell(new Boss.FileReadingTask("javaContainer"));
         try {
             System.out.println(">>> Press ENTER to exit <<<");
             System.in.read();
