@@ -11,6 +11,7 @@ import akka.actor.typed.javadsl.Behaviors;
 
 public class Employee extends AbstractBehavior<Pm.Ordered>{
 
+    public static class Report {} 
     private Employee(ActorContext<Ordered> context) {
         super(context);
     }
@@ -27,9 +28,9 @@ public class Employee extends AbstractBehavior<Pm.Ordered>{
     }
     
     private Behavior<Pm.Ordered> onMsgReceived(Pm.Ordered message){
-        // getContext().getLog().info("Gonna mess around wtih: " + message.task);
+        getContext().getLog().info("Gonna mess around wtih: " + message.task);
         // message.from.tell(new Ordered(name, getContext(), new ArrayList<String>()));
-        
+        // message.from.tell(null);
         // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
         return this;
     }
