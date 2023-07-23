@@ -1,5 +1,7 @@
 package it.unibo.ppc.akka;
 
+import java.util.ArrayList;
+
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
@@ -25,7 +27,9 @@ public class Employee extends AbstractBehavior<Pm.Ordered>{
     }
     
     private Behavior<Pm.Ordered> onMsgReceived(Pm.Ordered message){
-        getContext().getLog().info("Gonna mess around wtih: " + message.task);
+        // getContext().getLog().info("Gonna mess around wtih: " + message.task);
+        // message.from.tell(new Ordered(name, getContext(), new ArrayList<String>()));
+        
         // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
         return this;
     }

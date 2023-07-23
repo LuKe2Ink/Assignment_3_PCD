@@ -14,7 +14,10 @@ import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
+import it.unibo.ppc.interfaces.MapWrapper;
 import it.unibo.ppc.utilities.Utils;
+import it.unibo.ppc.utils.MapWrapperImpl;
+import it.unibo.ppc.utils.Settings;
 
 public class Boss extends AbstractBehavior<Boss.FileReadingTask> {
 
@@ -37,8 +40,12 @@ public class Boss extends AbstractBehavior<Boss.FileReadingTask> {
         public final String directoryPath;
         private List<String> pathList = new ArrayList<>();
         public final Collection<List<String>> tasks;
+        private Settings settings;
+        private MapWrapper map; 
 
-        public FileReadingTask(String directoryPath) {
+        public FileReadingTask(String directoryPath, Settings settings) {
+            this.settings = settings;
+            this.map =  new MapWrapperImpl(settings);
             this.directoryPath = directoryPath;
             try {
                 Utils.populateListOfPaths(pathList, directoryPath);
