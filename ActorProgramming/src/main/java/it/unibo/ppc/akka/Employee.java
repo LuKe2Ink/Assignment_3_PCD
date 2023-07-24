@@ -8,6 +8,7 @@ import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.Behaviors;
 import it.unibo.ppc.akka.Pm.Ordered;
 import it.unibo.ppc.utilities.Utils;
+import it.unibo.ppc.utilities.Utils.Pair;
 
 public class Employee extends AbstractActor{
 
@@ -19,11 +20,11 @@ public class Employee extends AbstractActor{
 
 
     public static class Report implements Message {
-        public Map<String, Integer> response; 
+        public Pair<String, Integer> response; 
         public String from;
 
-        public Report(String filename, int numberOfLines, String from){
-            this.response = Map.of(filename, numberOfLines);
+        public Report(Pair<String, Integer> response, String from){
+            this.response = response;
             this.from = from;
         }
 
@@ -56,7 +57,16 @@ public class Employee extends AbstractActor{
         // getContext().getLog().info("Gonna mess around wtih: " + message.task);
         // message.from.tell(new Ordered(name, getContext(), new ArrayList<String>()));
         // message.from.tell(null);
-        message.from.tell(new Report("bho", 0, "me"), getSelf());
+        message.task.forEach( singleTask -> 
+            {
+                try {
+                    message.from.tell( new Report(Utils.linesWithBufferInputStream(singleTask), this.name), getSender());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            } 
+        );
+        // message.from.tell(new Report("bho", 0, "me"), getSelf());
         // message.parent.tell(new Report(this.name, 0, this.name));
         // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
     }

@@ -22,7 +22,7 @@ public class Boss extends AbstractActor {
     private List<String> pathList = new ArrayList<>();
     public Collection<List<String>> tasks;
     private Settings settings;
-    private MapWrapper map; 
+    private MapWrapper map ; 
 
     private final static int NUMBER_OF_WORKERS = 7;
 
@@ -48,6 +48,7 @@ public class Boss extends AbstractActor {
             e.printStackTrace();
         }
 
+        System.out.println(pathList.size());
 
         int partitionSize = (int) pathList.size() / NUMBER_OF_WORKERS;
         this.tasks =  IntStream.range(0, pathList.size())
@@ -123,8 +124,11 @@ public class Boss extends AbstractActor {
         //         .collect(Collectors.toList());
         // worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks));
         // getContext().getLog().debug("recived report from {}", command.from);
+        this.map.updateMap(command.response.getValue());
+        this.map.updateList(command.response.getKey(), command.response.getValue());
+        System.out.println(this.map.fancyMap());
         // return null;
-        System.out.println("Boss.onReport()");
+        // System.out.println("Boss.onReport()");
     }
 
     @Override

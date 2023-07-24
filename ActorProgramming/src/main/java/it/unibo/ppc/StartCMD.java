@@ -13,7 +13,7 @@ public class StartCMD {
         // final ActorSystem<Employee.Report> greeterMain = ActorSystem.create(Boss.create("javaContainer", new Settings(Integer.parseInt(args[1]),Integer.parseInt(args[1]),Integer.parseInt(args[1]))), "helloakka");
         final ActorSystem greeterMain = ActorSystem.create("Sys");
         // greeterMain.actorOf(Boss.create("javaContainer", new Settings(123, 4, 12)), "helloakka");
-        greeterMain.actorOf(Boss.props("javaContainer", new Settings(123, 4, 12)),"Boss");
+        greeterMain.actorOf(Boss.props("javaContainer", new Settings(7450, 6, 3)),"Boss");
         // greeterMain.tell(new Boss.FileReadingTask());
         try {
             System.out.println(">>> Press ENTER to exit <<<");
