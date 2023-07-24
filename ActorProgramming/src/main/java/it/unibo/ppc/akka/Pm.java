@@ -16,12 +16,14 @@ public class Pm extends AbstractBehavior<Pm.Order> {
     }
 
     public static final class Order {
-        public final String whom;
+        public final String directoryPath;
+        public final ActorRef<Employee.Report> parent;
         public final List<ActorRef<Ordered>> replyTo;
         public Collection<List<String>> tasks;
 
-        public Order(String whom, List<ActorRef<Ordered>> replyTo, Collection<List<String>> tasks) {
-            this.whom = whom;
+        public Order(ActorRef<Employee.Report> parent, String directoryPath, List<ActorRef<Ordered>> replyTo, Collection<List<String>> tasks) {
+            this.parent = parent;
+            this.directoryPath = directoryPath;
             this.replyTo = replyTo;
             this.tasks = tasks;
         }
@@ -30,52 +32,18 @@ public class Pm extends AbstractBehavior<Pm.Order> {
     }
 
     public static final class Ordered {
-        public final String whom;
+        public final ActorRef<Employee.Report> parent;
+        // public final String whom;
         public final ActorRef<Order> from;
         public List<String> task;
 
-        public Ordered(String whom, ActorRef<Order> from, List<String> task) {
-            this.whom = whom;
+        public Ordered(ActorRef<Employee.Report> parent,ActorRef<Order> from, List<String> task) {
+            // this.whom = whom;
+            this.parent = parent;
             this.from = from;
             this.task = task;
         }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((whom == null) ? 0 : whom.hashCode());
-            result = prime * result + ((from == null) ? 0 : from.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            Ordered other = (Ordered) obj;
-            if (whom == null) {
-                if (other.whom != null)
-                    return false;
-            } else if (!whom.equals(other.whom))
-                return false;
-            if (from == null) {
-                if (other.from != null)
-                    return false;
-            } else if (!from.equals(other.from))
-                return false;
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "Ordered [whom=" + whom + ", from=" + from + "]";
-        }
-
+        //TODO equals hashcode etc....
     }
 
     public static Behavior<Order> create() {
@@ -88,10 +56,10 @@ public class Pm extends AbstractBehavior<Pm.Order> {
     }
 
     private Behavior<Order> onOrder(Order command) {
-        getContext().getLog().info("Received an order from {}!", command.whom);
+        // getContext().getLog().info("Received an order from {}!", command.whom);
         // #greeter-send-message
         // command.replyTo.tell(new Ordered(command.whom, getContext().getSelf()));
-        command.replyTo.forEach(replier -> replier.tell(new Ordered(command.whom, getContext().getSelf(),
+        command.replyTo.forEach(replier -> replier.tell(new Ordered(command.parent, getContext().getSelf(),
                 command.tasks.stream().toList().get(command.replyTo.indexOf(replier)))));
         // #greeter-send-message
         return this;

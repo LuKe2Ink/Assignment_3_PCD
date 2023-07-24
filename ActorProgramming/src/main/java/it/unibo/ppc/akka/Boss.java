@@ -53,7 +53,7 @@ public class Boss extends AbstractBehavior<Employee.Report> {
         List<ActorRef<Pm.Ordered>> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
                 numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
                 .collect(Collectors.toList());
-        worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks));
+        worker.tell(new Pm.Order(getContext().getSelf(), this.directoryPath, replyTo, this.tasks));
     }
 
     public static class SayMyName {
@@ -112,6 +112,7 @@ public class Boss extends AbstractBehavior<Employee.Report> {
         //         numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
         //         .collect(Collectors.toList());
         // worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks));
+        getContext().getLog().debug("recived report from {}", command.from);
         return this;
     }
 }
