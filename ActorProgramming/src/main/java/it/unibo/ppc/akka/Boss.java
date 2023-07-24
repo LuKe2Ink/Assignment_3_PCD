@@ -21,26 +21,24 @@ public class Boss extends AbstractActor {
     private String directoryPath;
     private List<String> pathList = new ArrayList<>();
     public Collection<List<String>> tasks;
-    private Settings settings;
     private MapWrapper map ; 
 
     private final static int NUMBER_OF_WORKERS = 7;
 
-    public static Props props(String directoryPath, Settings settings) {
-        return Props.create(Boss.class, directoryPath, settings);
+    public static Props props(String directoryPath, MapWrapper map) {
+        return Props.create(Boss.class, directoryPath, map);
     }
 
     private ActorRef worker;
 
     public Boss() {}
 
-    public Boss(String directoryPath, Settings settings) {
+    public Boss(String directoryPath, MapWrapper map) {
         // super(context);
         // worker = context.spawn(Pm.create(), "Pm");
         worker = getContext().actorOf(Pm.props(), "PM");
         // worker = getContext().getSystem().actorOf(Pm.props(), "PM");
-        this.settings = settings;
-        this.map =  new MapWrapperImpl(settings);
+        this.map =  map;
         this.directoryPath = directoryPath;
         try {
             Utils.populateListOfPaths(pathList, directoryPath);

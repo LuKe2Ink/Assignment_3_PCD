@@ -1,6 +1,5 @@
 package it.unibo.ppc.utilities;
 
-import it.unibo.ppc.AsyncTask;
 import it.unibo.ppc.utils.RangeClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,7 @@ import java.util.Map;
 
 public class Utils {
 
-    static final Logger logger = LoggerFactory.getLogger(AsyncTask.class);
+    static final Logger logger = LoggerFactory.getLogger("bho");
     public static void log(String message) {
         logger.info("{} | " + message, Thread.currentThread());
     }

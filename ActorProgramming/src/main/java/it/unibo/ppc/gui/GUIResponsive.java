@@ -4,16 +4,29 @@
 
 package it.unibo.ppc.gui;
 
-import it.unibo.ppc.interfaces.SourceAnalyser;
-import it.unibo.ppc.utilities.Continue;
-import it.unibo.ppc.utilities.Flag;
-import it.unibo.ppc.utilities.MapWrapperImplGUI;
-import it.unibo.ppc.utils.Settings;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+
+import javax.swing.DefaultListModel;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingWorker;
+
+import akka.actor.ActorSystem;
+import it.unibo.ppc.akka.Boss;
+import it.unibo.ppc.interfaces.MapWrapper;
+import it.unibo.ppc.interfaces.SourceAnalyser;
+import it.unibo.ppc.utilities.Continue;
+import it.unibo.ppc.utilities.MapWrapperImplGUI;
+import it.unibo.ppc.utils.MapWrapperImpl;
+import it.unibo.ppc.utils.Settings;
 
 /**
  * @author luke3
@@ -21,7 +34,9 @@ import java.util.List;
 public class GUIResponsive extends JFrame implements ActionListener {
 
     private Continue c = new Continue();
-    public GUIResponsive() {
+    private ActorSystem main;
+    public GUIResponsive(ActorSystem main) {
+        this.main = main;
         initComponents();
     }
 
@@ -152,12 +167,14 @@ public class GUIResponsive extends JFrame implements ActionListener {
             int maxLines = Integer.parseInt(maxLine.getText());
             int intervals = Integer.parseInt(interval.getText());
             int nFiles = Integer.parseInt(nfile.getText());
-            SourceAnalyser analyser = (SourceAnalyser) new SourceAnalyserImpl(new Settings(maxLines, intervals, nFiles));
-            MapWrapperImplGUI map = new MapWrapperImplGUI(new Settings(maxLines, intervals, nFiles), this);
-            analyser.setMapWrapper(map);
-            analyser.setContinue(this.c);
-            AnalyzeFromSource analizza = new AnalyzeFromSource(analyser);
-            analizza.execute();
+                // MapWrapper map = new MapWrapperImpl(settings);
+            MapWrapper map = new MapWrapperImplGUI(new Settings(maxLines, intervals, nFiles), this);
+            main.actorOf(Boss.props("javaContainer", map ),"Boss");
+            // SourceAnalyser analyser = (SourceAnalyser) new SourceAnalyserImpl(new Settings(maxLines, intervals, nFiles));
+            // analyser.setMapWrapper(map);
+            // analyser.setContinue(this.c);
+            // AnalyzeFromSource analizza = new AnalyzeFromSource(analyser);
+            // analizza.execute();
         } else if (src == pause){
             if(!this.c.isPaused())
                 this.c.pause();
@@ -175,19 +192,19 @@ public class GUIResponsive extends JFrame implements ActionListener {
         this.listModel.addAll(paths);
     }
 
-    public class AnalyzeFromSource extends SwingWorker<Void, Float> {
+    // public class AnalyzeFromSource extends SwingWorker<Void, Float> {
 
-        private SourceAnalyser analyser;
+    //     private SourceAnalyser analyser;
 
-        public AnalyzeFromSource(SourceAnalyser analyser){
-            this.analyser = analyser;
-        }
-        @Override
-        protected Void doInBackground() throws Exception {
-            this.analyser.analyzeSources("javaContainer");
-            return null;
-        }
-    }
+    //     public AnalyzeFromSource(SourceAnalyser analyser){
+    //         this.analyser = analyser;
+    //     }
+    //     @Override
+    //     protected Void doInBackground() throws Exception {
+    //         this.analyser.analyzeSources("javaContainer");
+    //         return null;
+    //     }
+    // }
     DefaultListModel listModel;
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     // Generated using JFormDesigner Evaluation license - Luis
