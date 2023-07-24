@@ -8,30 +8,37 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import akka.actor.typed.ActorRef;
-import akka.actor.typed.Behavior;
-import akka.actor.typed.javadsl.AbstractBehavior;
-import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.Behaviors;
-import akka.actor.typed.javadsl.Receive;
+import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
+import akka.actor.Props;
 import it.unibo.ppc.akka.Employee.Report;
 import it.unibo.ppc.interfaces.MapWrapper;
 import it.unibo.ppc.utilities.Utils;
 import it.unibo.ppc.utils.MapWrapperImpl;
 import it.unibo.ppc.utils.Settings;
 
-public class Boss extends AbstractBehavior<Employee.Report> {
-    public final String directoryPath;
+public class Boss extends AbstractActor {
+    private String directoryPath;
     private List<String> pathList = new ArrayList<>();
-    public final Collection<List<String>> tasks;
+    public Collection<List<String>> tasks;
     private Settings settings;
     private MapWrapper map; 
 
     private final static int NUMBER_OF_WORKERS = 7;
 
-    public Boss(ActorContext<Employee.Report> context, String directoryPath, Settings settings) {
-        super(context);
-        worker = context.spawn(Pm.create(), "Pm");
+    public static Props props(String directoryPath, Settings settings) {
+        return Props.create(Boss.class, directoryPath, settings);
+    }
+
+    private ActorRef worker;
+
+    public Boss() {}
+
+    public Boss(String directoryPath, Settings settings) {
+        // super(context);
+        // worker = context.spawn(Pm.create(), "Pm");
+        worker = getContext().actorOf(Pm.props(), "PM");
+        // worker = getContext().getSystem().actorOf(Pm.props(), "PM");
         this.settings = settings;
         this.map =  new MapWrapperImpl(settings);
         this.directoryPath = directoryPath;
@@ -41,7 +48,6 @@ public class Boss extends AbstractBehavior<Employee.Report> {
             e.printStackTrace();
         }
 
-        Collections.shuffle(pathList);
 
         int partitionSize = (int) pathList.size() / NUMBER_OF_WORKERS;
         this.tasks =  IntStream.range(0, pathList.size())
@@ -50,10 +56,15 @@ public class Boss extends AbstractBehavior<Employee.Report> {
                         Collectors.mapping(elementIndex -> pathList.get(elementIndex), Collectors.toList())))
                 .values();
 
-        List<ActorRef<Pm.Ordered>> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
-                numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
+        List<ActorRef> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
+                numberId -> getContext().getSystem().actorOf(Employee.props(), String.valueOf(numberId)))
                 .collect(Collectors.toList());
-        worker.tell(new Pm.Order(getContext().getSelf(), this.directoryPath, replyTo, this.tasks));
+        
+
+        // List<ActorRef> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
+        //         numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
+        //         .collect(Collectors.toList());
+        worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks), getSelf());
     }
 
     public static class SayMyName {
@@ -92,27 +103,33 @@ public class Boss extends AbstractBehavior<Employee.Report> {
     //     }
     // }
 
-    private final ActorRef<Pm.Order> worker;
 
-    public static Behavior<Report> create(String directoryPath, Settings settings) {
-        return Behaviors.setup(context -> new Boss(context, directoryPath, settings));
-    }
+    // public static Behavior<Report> create(String directoryPath, Settings settings) {
+    //     return Behaviors.setup(context -> new Boss(context, directoryPath, settings));
+    // }
 
-    @Override
-    public Receive<Report> createReceive() {
-        // throw new UnsupportedOperationException("Unimplemented method
-        // 'createReceive'");
-        return newReceiveBuilder().onMessage(Report.class, this::onReport).build();
+    // @Override
+    // public Receive<Report> createReceive() {
+    //     // throw new UnsupportedOperationException("Unimplemented method
+    //     // 'createReceive'");
+    //     return newReceiveBuilder().onMessage(Report.class, this::onReport).build();
 
-    }
+    // }
 
-    private Behavior<Report> onReport(Report command) {
+    private void onReport(Report command) {
         // TODO qui manca qualcosa che nel format original e cera
-        // List<ActorRef<Pm.Ordered>> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
+        // List<ActorRef> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
         //         numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
         //         .collect(Collectors.toList());
         // worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks));
-        getContext().getLog().debug("recived report from {}", command.from);
-        return this;
+        // getContext().getLog().debug("recived report from {}", command.from);
+        // return null;
+        System.out.println("Boss.onReport()");
+    }
+
+    @Override
+    public Receive createReceive() {
+        return receiveBuilder().match(Employee.Report.class, this::onReport)
+        .build();
     }
 }
