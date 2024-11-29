@@ -65,7 +65,8 @@ public class Utils {
     public static void populateListOfPaths(List<String> pathList, String directoryPath) throws IOException {
         final String dir = System.getProperty("user.dir");
         final String sep = System.getProperty("file.separator");
-        Files.walkFileTree(Paths.get(dir + sep + ".." + sep + directoryPath ), new FileVisitor<Path>() {
+        System.out.println("Checking: " +dir + sep + ".." + sep + directoryPath );
+        Files.walkFileTree(Paths.get(dir + sep + directoryPath ), new FileVisitor<Path>() {
             @Override
             public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
                 return FileVisitResult.CONTINUE;

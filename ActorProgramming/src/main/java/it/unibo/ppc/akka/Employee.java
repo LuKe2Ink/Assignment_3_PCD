@@ -11,7 +11,7 @@ import it.unibo.ppc.utilities.Utils;
 import it.unibo.ppc.utilities.Utils.Pair;
 
 public class Employee extends AbstractActor{
-
+    boolean stopFlag = false;
     private String name;
 
     public static Props props() {
@@ -32,6 +32,8 @@ public class Employee extends AbstractActor{
     public interface Message {}
 
     public static class StopMsg implements Message{}
+
+    public static class ResumeMsg implements Message{}
 
     // private Employee(context) {
     //     // super(context);
@@ -60,7 +62,7 @@ public class Employee extends AbstractActor{
         message.task.forEach( singleTask -> 
             {
                 try {
-                    message.from.tell( new Report(Utils.linesWithBufferInputStream(singleTask), this.name), getSender());
+                    if(!stopFlag) message.from.tell( new Report(Utils.linesWithBufferInputStream(singleTask), this.name), getSender());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -74,13 +76,22 @@ public class Employee extends AbstractActor{
     @Override
     public Receive createReceive() {
         // return Behaviors.receive(Message.class).onMessage(Ordered.class, Employee::onOrderedReceive)
-        return receiveBuilder().match(Ordered.class, this::onOrderedReceive)
-        .match(StopMsg.class, this::onStopReceive)
-        .match(Ordered.class, this::onOrderedReceive)
-        .build();
+        return receiveBuilder()
+                .match(Ordered.class, this::onOrderedReceive)
+                .match(StopMsg.class, this::onStopReceive)
+                .match(ResumeMsg.class, this::onResumeReceive)
+                .match(Ordered.class, this::onOrderedReceive)
+                .build();
+    }
+
+    private Behavior<Employee.ResumeMsg> onResumeReceive(Employee.ResumeMsg msg) {
+        this.stopFlag = false;
+        return null;
     }
 
     private Behavior<Employee.StopMsg> onStopReceive(Employee.StopMsg msg) {
+        System.out.println(this.name + " received stop");
+        this.stopFlag = true;
         return null;
     }
 }

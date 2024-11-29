@@ -6,6 +6,8 @@ import java.util.List;
 import akka.actor.AbstractActor;
 import akka.actor.Props;
 import akka.actor.ActorRef;
+import akka.actor.typed.Behavior;
+
 
 public class Pm extends AbstractActor{
 
@@ -15,7 +17,9 @@ public class Pm extends AbstractActor{
 
 
     public Pm() {}
+    public interface Message {}
 
+    public static class StopMsg implements Message {}
     public static final class Order {
         public final String directoryPath;
         public final List<ActorRef> replyTo;
@@ -62,8 +66,20 @@ public class Pm extends AbstractActor{
         // return this;
     }
 
+    private Behavior<Pm.StopMsg> onStopReceive(Pm.StopMsg msg) {
+        System.out.println("PM  received stop");
+        getContext().getChildren().forEach(child -> System.out.println("Sending stop to: " + child.path()));
+        getContext().getChildren().forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
+
+//        this.getContext().getChildren().forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
+        return null;
+    }
+
     @Override
     public Receive createReceive() {
-        return receiveBuilder().match(Pm.Order.class, this::onOrder).build();
+        return receiveBuilder()
+                .match(Pm.Order.class, this::onOrder)
+                .match(Pm.StopMsg.class, this::onStopReceive)
+                .build();
     }
 }

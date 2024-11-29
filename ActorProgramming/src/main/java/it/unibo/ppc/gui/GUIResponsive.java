@@ -17,15 +17,13 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
-import javax.swing.SwingWorker;
 
 import akka.actor.ActorSystem;
+import akka.actor.ActorRef;
 import it.unibo.ppc.akka.Boss;
 import it.unibo.ppc.interfaces.MapWrapper;
-import it.unibo.ppc.interfaces.SourceAnalyser;
 import it.unibo.ppc.utilities.Continue;
 import it.unibo.ppc.utilities.MapWrapperImplGUI;
-import it.unibo.ppc.utils.MapWrapperImpl;
 import it.unibo.ppc.utils.Settings;
 
 /**
@@ -33,161 +31,165 @@ import it.unibo.ppc.utils.Settings;
  */
 public class GUIResponsive extends JFrame implements ActionListener {
 
-    private Continue c = new Continue();
-    private ActorSystem main;
-    public GUIResponsive(ActorSystem main) {
+    private final Continue c = new Continue();
+    private final ActorSystem main;
+    private ActorRef boss;
+    public GUIResponsive(final ActorSystem main) {
         this.main = main;
-        initComponents();
+        this.initComponents();
     }
 
     private void initComponents() {
-        listModel = new DefaultListModel();
+        this.listModel = new DefaultListModel();
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         // Generated using JFormDesigner Evaluation license - Luis
-        start = new JButton();
-        resume = new JButton();
-        pause = new JButton();
-        maxLine = new JTextField();
-        interval = new JTextField();
-        nfile = new JTextField();
-        label1 = new JLabel();
-        map = new JLabel();
-        scrollPane1 = new JScrollPane();
-        maxFiles = new JList(listModel);
-        label3 = new JLabel();
-        label4 = new JLabel();
+        this.start = new JButton();
+        this.resume = new JButton();
+        this.pause = new JButton();
+        this.maxLine = new JTextField();
+        this.interval = new JTextField();
+        this.nfile = new JTextField();
+        this.label1 = new JLabel();
+        this.map = new JLabel();
+        this.scrollPane1 = new JScrollPane();
+        this.maxFiles = new JList(this.listModel);
+        this.label3 = new JLabel();
+        this.label4 = new JLabel();
 
         //======== this ========
-        var contentPane = getContentPane();
+        final var contentPane = this.getContentPane();
 
         //---- start ----
-        start.setText("Start");
+        this.start.setText("Start");
 
         //---- resume ----
-        resume.setText("Resume");
+        this.resume.setText("Resume");
 
         //---- pause ----
-        pause.setText("Pause");
+        this.pause.setText("Pause");
 
         //---- maxLine ----
-        maxLine.setText("7450");
+        this.maxLine.setText("7450");
 
         //---- interval ----
-        interval.setText("6");
+        this.interval.setText("6");
 
         //---- nfile ----
-        nfile.setText("3");
+        this.nfile.setText("3");
 
         //---- label1 ----
-        label1.setText("Max Lines");
+        this.label1.setText("Max Lines");
 
         //---- map ----
-        map.setText("Mappa");
+        this.map.setText("Mappa");
 
         //======== scrollPane1 ========
         {
-            scrollPane1.setViewportView(maxFiles);
+            this.scrollPane1.setViewportView(this.maxFiles);
         }
 
         //---- label3 ----
-        label3.setText("Intervals");
+        this.label3.setText("Intervals");
 
         //---- label4 ----
-        label4.setText("N\u00b0 Files");
+        this.label4.setText("N\u00b0 Files");
 
-        GroupLayout contentPaneLayout = new GroupLayout(contentPane);
+        final GroupLayout contentPaneLayout = new GroupLayout(contentPane);
         contentPane.setLayout(contentPaneLayout);
         contentPaneLayout.setHorizontalGroup(
             contentPaneLayout.createParallelGroup()
                 .addGroup(contentPaneLayout.createSequentialGroup()
                     .addGap(19, 19, 19)
                     .addGroup(contentPaneLayout.createParallelGroup()
-                        .addComponent(label1)
+                        .addComponent(this.label1)
                         .addGroup(contentPaneLayout.createSequentialGroup()
                             .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(maxLine, GroupLayout.Alignment.LEADING)
-                                .addComponent(label3, GroupLayout.Alignment.LEADING)
-                                .addComponent(label4, GroupLayout.Alignment.LEADING)
-                                .addComponent(nfile)
-                                .addComponent(interval)
-                                .addComponent(pause, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(resume, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(start, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addComponent(this.maxLine, GroupLayout.Alignment.LEADING)
+                                .addComponent(this.label3, GroupLayout.Alignment.LEADING)
+                                .addComponent(this.label4, GroupLayout.Alignment.LEADING)
+                                .addComponent(this.nfile)
+                                .addComponent(this.interval)
+                                .addComponent(this.pause, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(this.resume, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(this.start, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addGap(27, 27, 27)
-                            .addComponent(map, GroupLayout.PREFERRED_SIZE, 316, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(this.map, GroupLayout.PREFERRED_SIZE, 316, GroupLayout.PREFERRED_SIZE)
                             .addGap(42, 42, 42)
-                            .addComponent(scrollPane1, GroupLayout.PREFERRED_SIZE, 177, GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(this.scrollPane1, GroupLayout.PREFERRED_SIZE, 177, GroupLayout.PREFERRED_SIZE)))
                     .addContainerGap(39, Short.MAX_VALUE))
         );
         contentPaneLayout.setVerticalGroup(
             contentPaneLayout.createParallelGroup()
                 .addGroup(contentPaneLayout.createSequentialGroup()
                     .addGap(20, 20, 20)
-                    .addComponent(label1)
+                    .addComponent(this.label1)
                     .addGap(4, 4, 4)
                     .addGroup(contentPaneLayout.createParallelGroup()
                         .addGroup(contentPaneLayout.createSequentialGroup()
-                            .addComponent(maxLine, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                            .addComponent(this.maxLine, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                             .addGroup(contentPaneLayout.createParallelGroup()
                                 .addGroup(contentPaneLayout.createSequentialGroup()
-                                    .addComponent(label3)
+                                    .addComponent(this.label3)
                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(interval, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(this.interval, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(label4)
+                                    .addComponent(this.label4)
                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(nfile, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(this.nfile, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                     .addGap(18, 18, 18)
-                                    .addComponent(start)
+                                    .addComponent(this.start)
                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(resume)
+                                    .addComponent(this.resume)
                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(pause))
+                                    .addComponent(this.pause))
                                 .addGroup(contentPaneLayout.createSequentialGroup()
                                     .addGap(1, 1, 1)
-                                    .addComponent(scrollPane1, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE))))
-                        .addComponent(map, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(this.scrollPane1, GroupLayout.PREFERRED_SIZE, 175, GroupLayout.PREFERRED_SIZE))))
+                        .addComponent(this.map, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap(33, Short.MAX_VALUE))
         );
-        pack();
-        setLocationRelativeTo(getOwner());
+        this.pack();
+        this.setLocationRelativeTo(this.getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
 
-        start.addActionListener(this);
-        resume.addActionListener(this);
-        pause.addActionListener(this);
+        this.start.addActionListener(this);
+        this.resume.addActionListener(this);
+        this.pause.addActionListener(this);
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        Object src = e.getSource();
-        if (src==start){
+    public void actionPerformed(final ActionEvent e) {
+        final Object src = e.getSource();
+        if (src==this.start){
             System.out.println("cliccato");
-            int maxLines = Integer.parseInt(maxLine.getText());
-            int intervals = Integer.parseInt(interval.getText());
-            int nFiles = Integer.parseInt(nfile.getText());
+            final int maxLines = Integer.parseInt(this.maxLine.getText());
+            final int intervals = Integer.parseInt(this.interval.getText());
+            final int nFiles = Integer.parseInt(this.nfile.getText());
                 // MapWrapper map = new MapWrapperImpl(settings);
-            MapWrapper map = new MapWrapperImplGUI(new Settings(maxLines, intervals, nFiles), this);
-            main.actorOf(Boss.props("javaContainer", map ),"Boss");
+            final MapWrapper map = new MapWrapperImplGUI(new Settings(maxLines, intervals, nFiles), this);
+            System.out.println(this.main.toString());
+            this.boss = this.main.actorOf(Boss.props("javaContainer", map ),"Boss");
             // SourceAnalyser analyser = (SourceAnalyser) new SourceAnalyserImpl(new Settings(maxLines, intervals, nFiles));
             // analyser.setMapWrapper(map);
             // analyser.setContinue(this.c);
             // AnalyzeFromSource analizza = new AnalyzeFromSource(analyser);
             // analizza.execute();
-        } else if (src == pause){
-            if(!this.c.isPaused())
+        } else if (src == this.pause){
+            if(!this.c.isPaused()){
                 this.c.pause();
-        } else if (src == resume) {
+                this.boss.tell(new Boss.StopMsg(), ActorRef.noSender());
+            }
+        } else if (src == this.resume) {
             this.c.resume();
         }
     }
 
-    public void updateCountValue(String value) {
-        map.setText(value);
+    public void updateCountValue(final String value) {
+        this.map.setText(value);
     }
 
-    public void updateList(List<String> paths){
+    public void updateList(final List<String> paths){
         this.listModel.clear();
         this.listModel.addAll(paths);
     }

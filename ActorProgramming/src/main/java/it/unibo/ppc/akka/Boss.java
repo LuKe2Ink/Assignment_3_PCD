@@ -11,6 +11,7 @@ import java.util.stream.IntStream;
 import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
+import akka.actor.typed.Behavior;
 import it.unibo.ppc.akka.Employee.Report;
 import it.unibo.ppc.interfaces.MapWrapper;
 import it.unibo.ppc.utilities.Utils;
@@ -19,13 +20,15 @@ import it.unibo.ppc.utils.Settings;
 
 public class Boss extends AbstractActor {
     private String directoryPath;
-    private List<String> pathList = new ArrayList<>();
+    private final List<String> pathList = new ArrayList<>();
     public Collection<List<String>> tasks;
+
+    private List<ActorRef> replyTo;
     private MapWrapper map ; 
 
     private final static int NUMBER_OF_WORKERS = 7;
 
-    public static Props props(String directoryPath, MapWrapper map) {
+    public static Props props(final String directoryPath, final MapWrapper map) {
         return Props.create(Boss.class, directoryPath, map);
     }
 
@@ -33,43 +36,48 @@ public class Boss extends AbstractActor {
 
     public Boss() {}
 
-    public Boss(String directoryPath, MapWrapper map) {
+    public interface Message {}
+
+    public static class StopMsg implements Message {}
+
+    public Boss(final String directoryPath, final MapWrapper map) {
         // super(context);
         // worker = context.spawn(Pm.create(), "Pm");
-        worker = getContext().actorOf(Pm.props(), "PM");
+        System.out.println("Boss created");
+        this.worker = this.getContext().actorOf(Pm.props(), "PM");
         // worker = getContext().getSystem().actorOf(Pm.props(), "PM");
         this.map =  map;
         this.directoryPath = directoryPath;
         try {
-            Utils.populateListOfPaths(pathList, directoryPath);
-        } catch (IOException e) {
+            Utils.populateListOfPaths(this.pathList, directoryPath);
+        } catch (final IOException e) {
             e.printStackTrace();
         }
+        
+        System.out.println("pathListL: " + this.pathList.size());
 
-        System.out.println(pathList.size());
-
-        int partitionSize = (int) pathList.size() / NUMBER_OF_WORKERS;
-        this.tasks =  IntStream.range(0, pathList.size())
+        final int partitionSize = (int) this.pathList.size() / NUMBER_OF_WORKERS;
+        this.tasks =  IntStream.range(0, this.pathList.size())
                 .boxed()
                 .collect(Collectors.groupingBy(partition -> (partition % partitionSize),
-                        Collectors.mapping(elementIndex -> pathList.get(elementIndex), Collectors.toList())))
+                        Collectors.mapping(elementIndex -> this.pathList.get(elementIndex), Collectors.toList())))
                 .values();
 
-        List<ActorRef> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
-                numberId -> getContext().getSystem().actorOf(Employee.props(), String.valueOf(numberId)))
+        this.replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
+                numberId -> this.getContext().getSystem().actorOf(Employee.props(), String.valueOf(numberId)))
                 .collect(Collectors.toList());
         
 
         // List<ActorRef> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
         //         numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
         //         .collect(Collectors.toList());
-        worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks), getSelf());
+        this.worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks), this.getSelf());
     }
 
     public static class SayMyName {
         public final String name;
 
-        public SayMyName(String name) {
+        public SayMyName(final String name) {
             this.name = name;
         }
     }
@@ -115,7 +123,7 @@ public class Boss extends AbstractActor {
 
     // }
 
-    private void onReport(Report command) {
+    private void onReport(final Report command) {
         // TODO qui manca qualcosa che nel format original e cera
         // List<ActorRef> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
         //         numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
@@ -129,9 +137,19 @@ public class Boss extends AbstractActor {
         // System.out.println("Boss.onReport()");
     }
 
+    private Behavior<Boss.StopMsg> onStopReceive(Boss.StopMsg msg) {
+        System.out.println("Boss received stop");
+        this.worker.tell(new Pm.StopMsg(), this.getSelf());
+//        this.replyTo.forEach(employee -> employee.tell(new Employee.StopMsg(), this.getSelf()));
+
+//        this.replyTo.forEach(replier -> replier.tell(new Employee.StopMsg(), getSelf()) );
+        return null;
+    }
     @Override
     public Receive createReceive() {
-        return receiveBuilder().match(Employee.Report.class, this::onReport)
+        return this.receiveBuilder()
+                .match(Boss.StopMsg.class, this::onStopReceive)
+                .match(Employee.Report.class, this::onReport)
         .build();
     }
 }
