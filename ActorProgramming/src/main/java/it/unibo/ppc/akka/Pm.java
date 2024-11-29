@@ -1,7 +1,9 @@
 package it.unibo.ppc.akka;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
@@ -10,13 +12,23 @@ import akka.actor.typed.Behavior;
 
 
 public class Pm extends AbstractActor{
+    private final static int NUMBER_OF_WORKERS = 7;
 
-    public static Props props() {
-        return Props.create(Pm.class);
+    public static Props props(akka.actor.ActorRef Boss) {
+        return Props.create(Pm.class, () -> new Pm(Boss));
     }
 
+    private akka.actor.ActorRef boss;
+    private final List<ActorRef> employees = new ArrayList<>();
 
-    public Pm() {}
+
+    public Pm(akka.actor.ActorRef boss) {
+        this.boss = boss;
+        IntStream.range(0, NUMBER_OF_WORKERS).forEach(i -> {
+            ActorRef employee = getContext().actorOf(Employee.props(), "employee-" + i);
+            employees.add(employee);
+        });
+    }
     public interface Message {}
 
     public static class StopMsg implements Message {}
@@ -60,10 +72,20 @@ public class Pm extends AbstractActor{
         System.out.println("Pm.onOrder()");
         // #greeter-send-message
         // command.replyTo.tell(new Ordered(command.whom, getContext().getSelf()));
-        command.replyTo.forEach(replier -> replier.tell(new Ordered(getContext().getParent(),
-                command.tasks.stream().toList().get(command.replyTo.indexOf(replier))), getSelf()));
+//        command.replyTo.forEach(replier -> replier.tell(new Ordered(getContext().getParent(),
+//                command.tasks.stream().toList().get(command.replyTo.indexOf(replier))), getSelf()));
+
+        System.out.println("Pm.onOrder()");
+        for (int i = 0; i < employees.size(); i++) {
+            employees.get(i).tell(new Ordered(getSelf(), command.tasks.stream().toList().get(i)), getSelf());
+        }
         // #greeter-send-message
         // return this;
+    }
+
+    private void onReport(Employee.Report report) {
+        System.out.println("Pm received report from Employee: " + report.from);
+        boss.tell(report, getSelf());
     }
 
     private Behavior<Pm.StopMsg> onStopReceive(Pm.StopMsg msg) {
@@ -80,6 +102,7 @@ public class Pm extends AbstractActor{
         return receiveBuilder()
                 .match(Pm.Order.class, this::onOrder)
                 .match(Pm.StopMsg.class, this::onStopReceive)
+                .match(Employee.Report.class, this::onReport)
                 .build();
     }
 }

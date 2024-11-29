@@ -18,15 +18,15 @@ import it.unibo.ppc.utilities.Utils;
 import it.unibo.ppc.utils.MapWrapperImpl;
 import it.unibo.ppc.utils.Settings;
 
+
 public class Boss extends AbstractActor {
     private String directoryPath;
     private final List<String> pathList = new ArrayList<>();
     public Collection<List<String>> tasks;
 
-    private List<ActorRef> replyTo;
-    private MapWrapper map ; 
-
+    private MapWrapper map ;
     private final static int NUMBER_OF_WORKERS = 7;
+
 
     public static Props props(final String directoryPath, final MapWrapper map) {
         return Props.create(Boss.class, directoryPath, map);
@@ -44,7 +44,7 @@ public class Boss extends AbstractActor {
         // super(context);
         // worker = context.spawn(Pm.create(), "Pm");
         System.out.println("Boss created");
-        this.worker = this.getContext().actorOf(Pm.props(), "PM");
+        this.worker = this.getContext().actorOf(Pm.props(getSelf()), "PM");
         // worker = getContext().getSystem().actorOf(Pm.props(), "PM");
         this.map =  map;
         this.directoryPath = directoryPath;
@@ -63,15 +63,17 @@ public class Boss extends AbstractActor {
                         Collectors.mapping(elementIndex -> this.pathList.get(elementIndex), Collectors.toList())))
                 .values();
 
-        this.replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
-                numberId -> this.getContext().getSystem().actorOf(Employee.props(), String.valueOf(numberId)))
-                .collect(Collectors.toList());
-        
+//        this.replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
+//                numberId -> this.getContext().getSystem().actorOf(Employee.props(), String.valueOf(numberId)))
+//                .collect(Collectors.toList());
+//
 
         // List<ActorRef> replyTo = IntStream.range(0, NUMBER_OF_WORKERS - 1).boxed().map(
         //         numberId -> getContext().spawn(Employee.create(), Employee.class.getName() + String.valueOf(numberId)))
         //         .collect(Collectors.toList());
-        this.worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks), this.getSelf());
+//        this.worker.tell(new Pm.Order(this.directoryPath, replyTo, this.tasks), this.getSelf());
+        this.worker.tell(new Pm.Order(this.directoryPath, null, this.tasks), this.getSelf());
+
     }
 
     public static class SayMyName {
