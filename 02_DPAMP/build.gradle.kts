@@ -22,10 +22,15 @@ dependencies {
 
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.0.1-jre")
+
+
+    implementation("com.rabbitmq:amqp-client:5.17.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.0.1")
 }
 
 application {
     // Define the main class for the application.
 //    mainClass.set("_dpamp.App")
-    mainClass.set("_dpamp.PixelArtMain")
+    mainClass.set("_dpamp.PixelArt")
 }
