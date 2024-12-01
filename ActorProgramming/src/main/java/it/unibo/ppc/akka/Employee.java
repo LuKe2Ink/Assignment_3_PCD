@@ -1,8 +1,12 @@
 package it.unibo.ppc.akka;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.Behaviors;
@@ -18,6 +22,19 @@ public class Employee extends AbstractActor{
         return Props.create(Employee.class);
     }
 
+    private List<String> currentTasks = new ArrayList<>();
+    private Iterator<String> taskIterator = null;
+
+
+    public static class ProcessTask {
+        public final String task;
+        public final ActorRef sender;
+
+        public ProcessTask(String task, ActorRef sender) {
+            this.task = task;
+            this.sender = sender;
+        }
+    }
 
     public static class Report implements Message {
         public Pair<String, Integer> response; 
@@ -54,26 +71,63 @@ public class Employee extends AbstractActor{
     // }
     
 
-    private void  onOrderedReceive(Pm.Ordered message){
-        System.out.println(this.name + " received task");
-        message.task.forEach(singleTask -> {
+//    private void  onOrderedReceive(Pm.Ordered message){
+//        System.out.println(this.name + " received task");
+//        message.task.forEach(singleTask -> {
+//            try {
+//                // Controllo continuo dello stato di pausa
+//                while (stopFlag) {
+//                    System.out.println(this.name + " paused, waiting to resume...");
+//                    Thread.sleep(100); // Attesa attiva per la pausa
+//                }
+//                // Esegue il lavoro
+//                Pair<String, Integer> result = Utils.linesWithBufferInputStream(singleTask);
+//                message.from.tell(new Report(result, this.name), getSelf());
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        });
+//        // message.from.tell(new Report("bho", 0, "me"), getSelf());
+//        // message.parent.tell(new Report(this.name, 0, this.name));
+//        // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
+//    }
+
+    private void onProcessTask(ProcessTask msg) {
+        if (!stopFlag) {
             try {
-                // Controllo continuo dello stato di pausa
-                while (stopFlag) {
-                    System.out.println(this.name + " paused, waiting to resume...");
-                    Thread.sleep(100); // Attesa attiva per la pausa
-                }
-                // Esegue il lavoro
-                Pair<String, Integer> result = Utils.linesWithBufferInputStream(singleTask);
-                message.from.tell(new Report(result, this.name), getSelf());
+                Pair<String, Integer> result = Utils.linesWithBufferInputStream(msg.task);
+                msg.sender.tell(new Report(result, this.name), getSelf());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        });
-        // message.from.tell(new Report("bho", 0, "me"), getSelf());
-        // message.parent.tell(new Report(this.name, 0, this.name));
-        // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
+            processNextTask(msg.sender);
+        } else {
+            System.out.println(this.name + " paused, will not process further tasks.");
+        }
     }
+
+    private void onOrderedReceive(Pm.Ordered message) {
+    System.out.println(this.name + " received tasks.");
+    this.currentTasks = message.task;
+    this.taskIterator = currentTasks.iterator();
+    processNextTask(message.from);
+}
+
+    private void processNextTask(ActorRef sender) {
+        if (taskIterator != null && taskIterator.hasNext() && !stopFlag) {
+            String task = taskIterator.next();
+            getContext().getSystem().scheduler().scheduleOnce(
+                    scala.concurrent.duration.Duration.create(0, java.util.concurrent.TimeUnit.MILLISECONDS),
+                    getSelf(),
+                    new ProcessTask(task, sender),
+                    getContext().getSystem().dispatcher(),
+                    getSelf()
+            );
+        } else if (!taskIterator.hasNext()) {
+            System.out.println(this.name + " completed all tasks.");
+        }
+    }
+
 
     @Override
     public Receive createReceive() {
@@ -81,6 +135,7 @@ public class Employee extends AbstractActor{
         return receiveBuilder()
                 .match(Ordered.class, this::onOrderedReceive)
                 .match(StopMsg.class, this::onStopReceive)
+                .match(ProcessTask.class, this::onProcessTask)
                 .match(ResumeMsg.class, this::onResumeReceive)
                 .match(Ordered.class, this::onOrderedReceive)
                 .build();

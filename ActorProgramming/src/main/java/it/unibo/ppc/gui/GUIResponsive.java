@@ -182,6 +182,7 @@ public class GUIResponsive extends JFrame implements ActionListener {
             }
         } else if (src == this.resume) {
             this.c.resume();
+            this.boss.tell(new Boss.ResumeMsg(), ActorRef.noSender());
         }
     }
 
