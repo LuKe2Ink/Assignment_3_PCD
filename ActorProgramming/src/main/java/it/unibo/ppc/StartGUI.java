@@ -27,7 +27,7 @@ public class StartGUI {
             System.in.read();
         } catch (IOException ignored) {
         } finally {
-            greeterMain.terminate();
+//            greeterMain.terminate();
         }
     }
 }

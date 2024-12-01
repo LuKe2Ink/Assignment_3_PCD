@@ -32,6 +32,8 @@ public class Pm extends AbstractActor{
     public interface Message {}
 
     public static class StopMsg implements Message {}
+
+    public static class ResumeMsg  implements Message {}
     public static final class Order {
         public final String directoryPath;
         public final List<ActorRef> replyTo;
@@ -99,11 +101,17 @@ public class Pm extends AbstractActor{
         return null;
     }
 
+    private void onResumeReceive(Pm.ResumeMsg msg) {
+        System.out.println("PM received resume");
+        employees.forEach(employee -> employee.tell(new Employee.ResumeMsg(), getSelf()));
+    }
+
     @Override
     public Receive createReceive() {
         return receiveBuilder()
                 .match(Pm.Order.class, this::onOrder)
                 .match(Pm.StopMsg.class, this::onStopReceive)
+                .match(Pm.ResumeMsg.class, this::onResumeReceive)
                 .match(Employee.Report.class, this::onReport)
                 .build();
     }

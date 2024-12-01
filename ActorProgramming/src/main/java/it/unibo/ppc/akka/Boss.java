@@ -40,6 +40,9 @@ public class Boss extends AbstractActor {
 
     public static class StopMsg implements Message {}
 
+    public static class ResumeMsg implements Message {}
+
+
     public Boss(final String directoryPath, final MapWrapper map) {
         // super(context);
         // worker = context.spawn(Pm.create(), "Pm");
@@ -147,10 +150,18 @@ public class Boss extends AbstractActor {
 //        this.replyTo.forEach(replier -> replier.tell(new Employee.StopMsg(), getSelf()) );
         return null;
     }
+
+    private Behavior<Boss.ResumeMsg> onResumeReceive(Boss.ResumeMsg msg) {
+        System.out.println("Boss received resume");
+        this.worker.tell(new Pm.ResumeMsg(), this.getSelf());
+        return null;
+    }
+
     @Override
     public Receive createReceive() {
         return this.receiveBuilder()
                 .match(Boss.StopMsg.class, this::onStopReceive)
+                .match(Boss.ResumeMsg.class, this::onResumeReceive)
                 .match(Employee.Report.class, this::onReport)
         .build();
     }

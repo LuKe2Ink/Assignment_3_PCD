@@ -55,16 +55,15 @@ public class Employee extends AbstractActor{
     
 
     private void  onOrderedReceive(Pm.Ordered message){
-        System.out.println(".()");
-        // getContext().getLog().info("Gonna mess around wtih: " + message.task);
-        // message.from.tell(new Ordered(name, getContext(), new ArrayList<String>()));
-        // message.from.tell(null);
+        System.out.println(this.name + " received task");
         message.task.forEach(singleTask -> {
             try {
+                // Controllo continuo dello stato di pausa
                 while (stopFlag) {
-                    System.out.println("Employee paused, waiting to resume...");
-                    Thread.sleep(100); // Attesa attiva fino a quando stopFlag non viene resettato
+                    System.out.println(this.name + " paused, waiting to resume...");
+                    Thread.sleep(100); // Attesa attiva per la pausa
                 }
+                // Esegue il lavoro
                 Pair<String, Integer> result = Utils.linesWithBufferInputStream(singleTask);
                 message.from.tell(new Report(result, this.name), getSelf());
             } catch (InterruptedException e) {
