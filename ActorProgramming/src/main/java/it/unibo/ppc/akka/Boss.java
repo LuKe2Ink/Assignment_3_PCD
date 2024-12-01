@@ -142,19 +142,17 @@ public class Boss extends AbstractActor {
         // System.out.println("Boss.onReport()");
     }
 
-    private Behavior<Boss.StopMsg> onStopReceive(Boss.StopMsg msg) {
+    private void onStopReceive(Boss.StopMsg msg) {
         System.out.println("Boss received stop");
         this.worker.tell(new Pm.StopMsg(), this.getSelf());
 //        this.replyTo.forEach(employee -> employee.tell(new Employee.StopMsg(), this.getSelf()));
 
 //        this.replyTo.forEach(replier -> replier.tell(new Employee.StopMsg(), getSelf()) );
-        return null;
     }
 
-    private Behavior<Boss.ResumeMsg> onResumeReceive(Boss.ResumeMsg msg) {
+    private void  onResumeReceive(Boss.ResumeMsg msg) {
         System.out.println("Boss received resume");
         this.worker.tell(new Pm.ResumeMsg(), this.getSelf());
-        return null;
     }
 
     @Override

@@ -114,19 +114,24 @@ public class Employee extends AbstractActor{
 }
 
     private void processNextTask(ActorRef sender) {
-        if (taskIterator != null && taskIterator.hasNext() && !stopFlag) {
-            String task = taskIterator.next();
-            getContext().getSystem().scheduler().scheduleOnce(
-                    scala.concurrent.duration.Duration.create(0, java.util.concurrent.TimeUnit.MILLISECONDS),
-                    getSelf(),
-                    new ProcessTask(task, sender),
-                    getContext().getSystem().dispatcher(),
-                    getSelf()
-            );
-        } else if (!taskIterator.hasNext()) {
+        if (taskIterator != null && taskIterator.hasNext()) {
+            if (!stopFlag) {
+                String task = taskIterator.next();
+                getContext().getSystem().scheduler().scheduleOnce(
+                        scala.concurrent.duration.Duration.create(0, java.util.concurrent.TimeUnit.MILLISECONDS),
+                        getSelf(),
+                        new ProcessTask(task, sender),
+                        getContext().getSystem().dispatcher(),
+                        getSelf()
+                );
+            } else {
+                System.out.println(this.name + " paused, waiting to resume...");
+            }
+        } else if (taskIterator != null && !taskIterator.hasNext()) {
             System.out.println(this.name + " completed all tasks.");
         }
     }
+
 
 
     @Override
@@ -136,20 +141,22 @@ public class Employee extends AbstractActor{
                 .match(Ordered.class, this::onOrderedReceive)
                 .match(StopMsg.class, this::onStopReceive)
                 .match(ProcessTask.class, this::onProcessTask)
-                .match(ResumeMsg.class, this::onResumeReceive)
+                .match(Employee.ResumeMsg.class, this::onResumeReceive)
                 .match(Ordered.class, this::onOrderedReceive)
                 .build();
     }
 
-    private Behavior<Employee.ResumeMsg> onResumeReceive(Employee.ResumeMsg msg) {
+    private void onResumeReceive(Employee.ResumeMsg msg) {
         System.out.println(this.name + " received resume");
         this.stopFlag = false;
-        return null;
+        if (taskIterator != null && taskIterator.hasNext()) {
+            System.out.println(this.name + " resuming task processing.");
+            processNextTask(getSender());
+        }
     }
 
-    private Behavior<Employee.StopMsg> onStopReceive(Employee.StopMsg msg) {
+    private  void onStopReceive(Employee.StopMsg msg) {
         System.out.println(this.name + " received stop");
         this.stopFlag = true;
-        return null;
     }
 }

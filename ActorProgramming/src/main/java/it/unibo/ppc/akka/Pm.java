@@ -33,7 +33,13 @@ public class Pm extends AbstractActor{
 
     public static class StopMsg implements Message {}
 
-    public static class ResumeMsg  implements Message {}
+    public static class ResumeMsg  implements Message {
+//        public final ActorRef from;
+//        public ResumeMsg(ActorRef from) {
+//            // this.whom = whom;
+//            this.from = from;
+//        }
+    }
     public static final class Order {
         public final String directoryPath;
         public final List<ActorRef> replyTo;
@@ -90,15 +96,13 @@ public class Pm extends AbstractActor{
         boss.tell(report, getSelf());
     }
 
-    private Behavior<Pm.StopMsg> onStopReceive(Pm.StopMsg msg) {
+    private void onStopReceive(Pm.StopMsg msg) {
         System.out.println("PM  received stop");
 //        getContext().getChildren().forEach(child -> System.out.println("Sending stop to: " + child.path()));
 //        getContext().getChildren().forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
 //        employees.forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
         employees.forEach(employee -> employee.tell(new Employee.StopMsg(), getSelf()));
-
 //        this.getContext().getChildren().forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
-        return null;
     }
 
     private void onResumeReceive(Pm.ResumeMsg msg) {
