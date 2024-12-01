@@ -26,6 +26,9 @@ public class Employee extends AbstractActor{
     private Iterator<String> taskIterator = null;
 
 
+    /**
+     * Usato per gestire la possibilita' di fermare e far ripartire i task
+     */
     public static class ProcessTask {
         public final String task;
         public final ActorRef sender;
@@ -52,46 +55,11 @@ public class Employee extends AbstractActor{
 
     public static class ResumeMsg implements Message{}
 
-    // private Employee(context) {
-    //     // super(context);
-    //     this.name = context.getSelf().toString();
-    // }
 
-    // public static Behavior<Message> create(){
-    //     return Behaviors.setup(new Employee());
-    //     // return Behaviors.receive(Message.class).onMessage(Report.class, Employee::)
-    // }
-
-
-    // @Override
-    // public Receive<Pm.Ordered> createReceive() {
-    //     return newReceiveBuilder()
-    //     .onMessage(Pm.Ordered.class, this::onMsgReceived)
-    //     .build();
-    // }
-    
-
-//    private void  onOrderedReceive(Pm.Ordered message){
-//        System.out.println(this.name + " received task");
-//        message.task.forEach(singleTask -> {
-//            try {
-//                // Controllo continuo dello stato di pausa
-//                while (stopFlag) {
-//                    System.out.println(this.name + " paused, waiting to resume...");
-//                    Thread.sleep(100); // Attesa attiva per la pausa
-//                }
-//                // Esegue il lavoro
-//                Pair<String, Integer> result = Utils.linesWithBufferInputStream(singleTask);
-//                message.from.tell(new Report(result, this.name), getSelf());
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//        });
-//        // message.from.tell(new Report("bho", 0, "me"), getSelf());
-//        // message.parent.tell(new Report(this.name, 0, this.name));
-//        // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
-//    }
-
+    /**
+     * Funzione che effettivamente smaltisce un singolo task
+     * @param msg
+     */
     private void onProcessTask(ProcessTask msg) {
         if (!stopFlag) {
             try {
@@ -113,6 +81,11 @@ public class Employee extends AbstractActor{
     processNextTask(message.from);
 }
 
+    /**
+     * Permette di fermare e riprendere i task assegnati al employee e di
+     * rimandare al sender il report completo del loro lavoro
+     * @param sender
+     */
     private void processNextTask(ActorRef sender) {
         if (taskIterator != null && taskIterator.hasNext()) {
             if (!stopFlag) {
@@ -151,7 +124,7 @@ public class Employee extends AbstractActor{
         this.stopFlag = false;
         if (taskIterator != null && taskIterator.hasNext()) {
             System.out.println(this.name + " resuming task processing.");
-            processNextTask(getSender());
+            processNextTask(getSender()); // Fondamentale che rimandino i report al loro responsabile
         }
     }
 
