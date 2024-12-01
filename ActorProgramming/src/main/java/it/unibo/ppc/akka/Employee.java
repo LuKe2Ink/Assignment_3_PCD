@@ -59,15 +59,18 @@ public class Employee extends AbstractActor{
         // getContext().getLog().info("Gonna mess around wtih: " + message.task);
         // message.from.tell(new Ordered(name, getContext(), new ArrayList<String>()));
         // message.from.tell(null);
-        message.task.forEach( singleTask -> 
-            {
-                try {
-                    if(!stopFlag) message.from.tell( new Report(Utils.linesWithBufferInputStream(singleTask), this.name), getSender());
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+        message.task.forEach(singleTask -> {
+            try {
+                while (stopFlag) {
+                    System.out.println("Employee paused, waiting to resume...");
+                    Thread.sleep(100); // Attesa attiva fino a quando stopFlag non viene resettato
                 }
-            } 
-        );
+                Pair<String, Integer> result = Utils.linesWithBufferInputStream(singleTask);
+                message.from.tell(new Report(result, this.name), getSelf());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
         // message.from.tell(new Report("bho", 0, "me"), getSelf());
         // message.parent.tell(new Report(this.name, 0, this.name));
         // getContext().getLog().info("Got it Pm -{}", this.name, getContext(), getClass());
@@ -85,6 +88,7 @@ public class Employee extends AbstractActor{
     }
 
     private Behavior<Employee.ResumeMsg> onResumeReceive(Employee.ResumeMsg msg) {
+        System.out.println(this.name + " received resume");
         this.stopFlag = false;
         return null;
     }

@@ -90,8 +90,10 @@ public class Pm extends AbstractActor{
 
     private Behavior<Pm.StopMsg> onStopReceive(Pm.StopMsg msg) {
         System.out.println("PM  received stop");
-        getContext().getChildren().forEach(child -> System.out.println("Sending stop to: " + child.path()));
-        getContext().getChildren().forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
+//        getContext().getChildren().forEach(child -> System.out.println("Sending stop to: " + child.path()));
+//        getContext().getChildren().forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
+//        employees.forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
+        employees.forEach(employee -> employee.tell(new Employee.StopMsg(), getSelf()));
 
 //        this.getContext().getChildren().forEach(child -> child.tell(new Employee.StopMsg(), getSelf()));
         return null;
