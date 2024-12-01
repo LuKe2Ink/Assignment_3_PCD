@@ -23,11 +23,12 @@ import com.rabbitmq.client.DeliverCallback;
 
 public class PixelArt {
   private static final String EXCHANGE_NAME = "name exchange";
+  private static String identifier;
   public static void main(final String[] argv) throws Exception {
     try {
       // Generate a random UUID
       final UUID uuid = UUID.randomUUID();
-      final String identifier = uuid.toString();
+      identifier = uuid.toString();
       //Map with the pixels colored
       final Map<Pair<Integer, Integer>, Integer> coloredPixels = new HashMap<>();
       final ConnectionFactory factory = new ConnectionFactory();
@@ -65,7 +66,7 @@ public class PixelArt {
         view.refresh();
         //the message contains the x and y of the mouse and the id and color of the brush
         final String message = x + "_" + y + "_" + localBrush.getIdBrush() + "_" +  localBrush.getColor();
-        //publish a message to notify that the local brush changed the position
+//        publish a message to notify that the local brush changed the position
         try {
 			channel.basicPublish(EXCHANGE_NAME, "topic.mouse", null, message.getBytes(StandardCharsets.UTF_8));
 		} catch (final IOException e) {
@@ -194,7 +195,7 @@ public class PixelArt {
       final String[] messageContent = message.split("_");
       //the message contains the x and y of the mouse and the id and color of the brush
       final BrushManager.Brush currentBrush = brushManager.getBrushFromInfo(messageContent);
-      currentBrush.updatePosition(Integer.parseInt(messageContent[0]), Integer.parseInt(messageContent[1]));
+      if(!messageContent[2].equals(identifier)) currentBrush.updatePosition(Integer.parseInt(messageContent[0]), Integer.parseInt(messageContent[1]));
       view.refresh();
     });
   }
