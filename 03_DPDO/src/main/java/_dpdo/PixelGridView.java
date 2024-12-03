@@ -1,12 +1,13 @@
-package _dpamp;
-
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.util.*;
-import java.util.List;
+package _dpdo;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PixelGridView extends JFrame {
@@ -18,7 +19,7 @@ public class PixelGridView extends JFrame {
 
 	private final List<ColorChangeListener> colorChangeListeners;
     
-    public PixelGridView(PixelGrid grid, BrushManager brushManager, int w, int h){
+    public PixelGridView(PixelGrid grid, BrushManager brushManager, int w, int h, String identifier){
 		this.grid = grid;
 		this.w = w;
 		this.h = h;
@@ -34,7 +35,7 @@ public class PixelGridView extends JFrame {
 		colorChangeButton.addActionListener(e -> {
 			var color = JColorChooser.showDialog(this, "Choose a color", Color.BLACK);
 			if (color != null) {
-				colorChangeListeners.forEach(l -> l.colorChanged(color.getRGB()));
+				colorChangeListeners.forEach(l -> l.colorChanged(identifier, color.getRGB()));
 			}
 		});
 		// add panel and a button to the button to change color

@@ -1,4 +1,4 @@
-package _dpamp;
+package _dpdo;
 
 import javax.swing.*;
 import java.awt.*;

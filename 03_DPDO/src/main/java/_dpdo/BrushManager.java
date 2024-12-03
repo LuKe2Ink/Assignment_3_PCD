@@ -1,16 +1,16 @@
-package _dpamp;
+package _dpdo;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class BrushManager {
     private static final int BRUSH_SIZE = 10;
     private static final int STROKE_SIZE = 2;
-    private final Set<Brush> brushes = new java.util.HashSet<>();
+    private Set<Brush> brushes = new java.util.HashSet<>();
 
     void draw(final Graphics2D g) {
         this.brushes.forEach(brush -> {
@@ -35,6 +35,14 @@ public class BrushManager {
         return this.brushes.stream().filter(b -> b.getIdBrush().equals(brushId)).toList().get(0);
     }
 
+    void searchAndSet(final String id, final int color){
+        this.brushes = this.brushes.stream().map(brush -> {
+            if(Objects.equals(brush.idBrush, id)) {
+                brush.setColor(color);
+            }
+            return brush;
+        }).collect(Collectors.toSet());
+    }
     void addBrush(final Brush brush) {
         this.brushes.add(brush);
     }
@@ -73,7 +81,6 @@ public class BrushManager {
         public void setColor(final int color) {
             this.color = color;
         }
-        
         public String getIdBrush(){
             return this.idBrush;
         }

@@ -32,5 +32,5 @@ dependencies {
 application {
     // Define the main class for the application.
 //    mainClass.set("_dpamp.App")
-    mainClass.set("_dpamp.PixelArt")
+    mainClass.set("_dpdo.PixelArt")
 }
