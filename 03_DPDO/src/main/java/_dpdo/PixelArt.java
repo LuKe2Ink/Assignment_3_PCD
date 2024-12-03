@@ -24,10 +24,6 @@ import com.rabbitmq.client.DeliverCallback;
 public class PixelArt {
   private static final String EXCHANGE_NAME = "part2";
   private static String identifier;
-
-  private final static Boolean DEBUG = false;
-
-  static final BrushManager brushManager = new BrushManager();
   public static void main(final String[] argv) throws Exception {
     try {
       // Generate a random UUID
@@ -42,14 +38,12 @@ public class PixelArt {
       channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
 
       //declaration of the queues
-      channel.queueDeclare(identifier + "mouse", false, false, false, null); // mouse movement
-      channel.queueDeclare(identifier + "brush", false, false, false, null); // brush color
-      channel.queueDeclare(identifier + "color", false, false, false, null); // pixel color
+      channel.queueDeclare(identifier + "mouse", false, false, false, null);
+      channel.queueDeclare(identifier + "color", false, false, false, null);
       channel.queueDeclare(identifier + "history", false, false, false, null);
       channel.queueDeclare(identifier + "exit", false, false, false, null);
       // Bind the queue to the exchange
       channel.queueBind(identifier + "mouse", EXCHANGE_NAME, "topic.mouse");
-      channel.queueBind(identifier + "brush", EXCHANGE_NAME, "topic.brush");
       channel.queueBind(identifier + "color", EXCHANGE_NAME, "topic.color");
       channel.queueBind(identifier + "history", EXCHANGE_NAME, "topic.history");
       channel.queueBind(identifier + "exit", EXCHANGE_NAME, "topic.exit");
@@ -57,14 +51,14 @@ public class PixelArt {
       //publish a message to request the history
       final String requestMessage = "NEED_HISTORY";
       channel.basicPublish(EXCHANGE_NAME, "topic.history", null, requestMessage.getBytes(StandardCharsets.UTF_8));
-      if(DEBUG) System.out.println(" [x] Sent '" + requestMessage + "'");
-
+      System.out.println(" [x] Sent '" + requestMessage + "'");
 
       //setting of the Brush
+      final var brushManager = new BrushManager();
       final var localBrush = new BrushManager.Brush(0, 0, randomColor(), identifier);
       brushManager.addBrush(localBrush);
       final PixelGrid grid = new PixelGrid(40, 40);
-      final PixelGridView view = new PixelGridView(grid, brushManager, 800, 600, identifier);
+      final PixelGridView view = new PixelGridView(grid, brushManager, 800, 600);
 
       //listener for the movement of the mouse
       view.addMouseMovedListener((x, y) -> {
@@ -79,7 +73,7 @@ public class PixelArt {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        if(DEBUG) System.out.println(" [x] Sent '" + message + "'");
+        System.out.println(" [x] Sent '" + message + "'");
       });
 
       //listener for the addition of the pixel
@@ -89,7 +83,7 @@ public class PixelArt {
         coloredPixels.put(new Pair<>(x, y), localBrush.getColor());
         view.refresh();
         //the message contains x, y, color of the brush
-        final String message = identifier + "_" + x + "_" + y + "_" + localBrush.getColor();
+        final String message = x + "_" + y + "_" + localBrush.getColor();
         //publish a message to notify that a new pixel was colored
         try {
 			channel.basicPublish(EXCHANGE_NAME, "topic.color", null, message.getBytes(StandardCharsets.UTF_8));
@@ -97,14 +91,14 @@ public class PixelArt {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-        if(DEBUG) System.out.println(" [x] Sent '" + message + "'");
+        System.out.println(" [x] Sent '" + message + "'");
       });
 
 
       //callbacks to manage the messages
       final DeliverCallback deliverCallbackMouse = (consumerTag, delivery) -> {
         final String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-        if(DEBUG) System.out.println(" [x] Received A '" + message + "' by thread "+Thread.currentThread().getName());
+        System.out.println(" [x] Received A '" + message + "' by thread "+Thread.currentThread().getName());
         updateMouse(message, view, brushManager);
       };
 
@@ -115,24 +109,15 @@ public class PixelArt {
         brushManager.removeBrush(brushManager.getBrushFromId(idBrush));
       };
 
-
-      final DeliverCallback deliverCallbackBrushColorChange = (consumerTag, delivery) -> {
-        final String idBrush = new String(delivery.getBody(), StandardCharsets.UTF_8);
-        if(DEBUG) System.out.println(" Brush: " + idBrush + "tried to change is color");
-        String[] msg = idBrush.split("_");
-        brushManager.searchAndSet(msg[0], Integer.parseInt(msg[1]));
-      };
-
-
       final DeliverCallback deliverCallbackHistory = (consumerTag, delivery) -> {
         final String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-        if(DEBUG) System.out.println(" [x] Received A '" + message + "' by thread "+Thread.currentThread().getName());
+        System.out.println(" [x] Received A '" + message + "' by thread "+Thread.currentThread().getName());
         if ("NEED_HISTORY".equals(message)){
           if ( !coloredPixels.isEmpty()){
             final String stringMessage = coloredPixels.entrySet().stream().map(e -> e.getKey().getX()+"_"+e.getKey().getY()+"_"+e.getValue()).reduce((e1, e2) -> e1.concat("@".concat(e2))).orElse("");
             //publish the history
             channel.basicPublish(EXCHANGE_NAME, "topic.history", null, stringMessage.getBytes(StandardCharsets.UTF_8));
-            if(DEBUG) System.out.println(" [x] Sent '" + stringMessage + "'");
+            System.out.println(" [x] Sent '" + stringMessage + "'");
           }
         } else{
           final String[] cellAndColor = message.split("@");
@@ -153,25 +138,7 @@ public class PixelArt {
       channel.basicConsume(identifier + "mouse", true, deliverCallbackMouse, consumerTag -> {});
       channel.basicConsume(identifier + "history", true, deliverCallbackHistory, consumerTag -> {});
       channel.basicConsume(identifier + "exit", true, deliverCallbackExit, consumerTag -> {});
-      channel.basicConsume(identifier + "brush", true, deliverCallbackBrushColorChange, consumerTag -> {});
-//      deliverCallbackBrushColorChange
-//      view.addColorChangedListener(localBrush::setColor);
-      view.addColorChangedListener((identifier, color) -> {
-        if(DEBUG) System.out.println("USER is trying to change color");
-        localBrush.setColor(color);
-        final String message = localBrush.getIdBrush() + "_" +  color;
-        try {
-          channel.basicPublish(EXCHANGE_NAME, "topic.brush", null, message.getBytes(StandardCharsets.UTF_8));
-        } catch (final IOException e) {
-          e.printStackTrace();
-        }
-
-//        var changed = brushManager.getBrushFromId(identifier);
-//        changed.setColor(color);
-//        brushManager.removeBrush(changed);
-//        brushManager.addBrush(changed);
-//        localBrush.setColor(color);
-      });
+      view.addColorChangedListener(localBrush::setColor);
 
       view.display();
 
@@ -188,7 +155,7 @@ public class PixelArt {
           } catch (final IOException ex) {
             throw new RuntimeException(ex);
           }
-          if(DEBUG) System.out.println(" [x] Sent '" + brushId + "'");
+          System.out.println(" [x] Sent '" + brushId + "'");
           try {
             channel.close();
             connection.close();
@@ -212,18 +179,13 @@ public class PixelArt {
   }
 
   //update of the colored pixels
-  public static void updateColor(final String message, final PixelGridView view, final PixelGrid grid, final Map<Pair<Integer, Integer>, Integer> coloredPixels, final BrushManager brushManager){
+  public static void updateColor(final String message, final PixelGridView view, final PixelGrid grid, final Map<Pair<Integer, Integer>, Integer> coloredPixels){
     SwingUtilities.invokeLater(() -> {
       final String[] messageContent = message.split("_");
       //the message contains x, y, color of the brush
-      grid.set(Integer.parseInt(messageContent[1]), Integer.parseInt(messageContent[2]), Integer.parseInt(messageContent[3]));
-      //ho un identifier del brush che ha cambiato colore devo trovarlo e cambiarlo
-//      System.out.println("Color changed.... set the brush now");
-//      final BrushManager.Brush changedBrush = brushManager.getBrushFromInfo(messageContent);
-//      System.out.println("changedBrush = " + changedBrush);
-//      changedBrush.setColor(Integer.parseInt(messageContent[3]));
+      grid.set(Integer.parseInt(messageContent[0]), Integer.parseInt(messageContent[1]), Integer.parseInt(messageContent[2]));
       view.refresh();
-      coloredPixels.put(new Pair<>(Integer.parseInt(messageContent[1]), Integer.parseInt(messageContent[2])), Integer.parseInt(messageContent[3]));
+      coloredPixels.put(new Pair<>(Integer.parseInt(messageContent[0]), Integer.parseInt(messageContent[1])), Integer.parseInt(messageContent[2]));
     });
   }
 
@@ -243,13 +205,8 @@ public class PixelArt {
       // Create a consumer and start consuming messages
       final DeliverCallback deliverCallbackColor = (consumerTag, delivery) -> {
         final String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
-        if(DEBUG) System.out.println(" [x] Received A '" + message + "' by thread "+Thread.currentThread().getName());
-//        System.out.println("Color changed.... set the brush now");
-//        final BrushManager.Brush changedBrush = brushManager.getBrushFromInfo(message.split("_"));
-//        System.out.println("changedBrush = " + changedBrush);
-//        changedBrush.setColor(Integer.parseInt(messageContent[3]));
-        updateColor(message, view, grid, coloredPixels, brushManager);
-        view.refresh();
+        System.out.println(" [x] Received A '" + message + "' by thread "+Thread.currentThread().getName());
+        updateColor(message, view, grid, coloredPixels);
         try {
           Thread.sleep(10);
         } catch (final Exception ex) {

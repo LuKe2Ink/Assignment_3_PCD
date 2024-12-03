@@ -18,7 +18,7 @@ public class PixelGridView extends JFrame {
 
 	private final List<ColorChangeListener> colorChangeListeners;
     
-    public PixelGridView(PixelGrid grid, BrushManager brushManager, int w, int h, String identifier){
+    public PixelGridView(PixelGrid grid, BrushManager brushManager, int w, int h){
 		this.grid = grid;
 		this.w = w;
 		this.h = h;
@@ -34,7 +34,7 @@ public class PixelGridView extends JFrame {
 		colorChangeButton.addActionListener(e -> {
 			var color = JColorChooser.showDialog(this, "Choose a color", Color.BLACK);
 			if (color != null) {
-				colorChangeListeners.forEach(l -> l.colorChanged(identifier, color.getRGB()));
+				colorChangeListeners.forEach(l -> l.colorChanged(color.getRGB()));
 			}
 		});
 		// add panel and a button to the button to change color
