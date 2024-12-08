@@ -17,6 +17,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(mapOf("path" to ":02_DPAMP")))
     // Use JUnit test framework.
     testImplementation("junit:junit:4.13.2")
 
@@ -32,5 +33,5 @@ dependencies {
 application {
     // Define the main class for the application.
 //    mainClass.set("_dpamp.App")
-    mainClass.set("_dpdo.PixelArt")
+    mainClass.set("_dpdo.Main")
 }

@@ -1,63 +1,66 @@
 package _dpdo;
-
 /*
  * A standard generic Pair<X,Y>, with getters, hashCode, equals, and toString well implemented. 
  */
 
-public class Pair<X,Y> {
-	
+import java.io.Serializable;
+import java.util.UUID;
+
+public class Pair<X,Y> implements Serializable {
+
+	private static final UUID serialVersionUID = UUID.randomUUID();
 	private final X x;
 	private final Y y;
 	
-	public Pair(final X x, final Y y) {
+	public Pair(X x, Y y) {
 		super();
 		this.x = x;
 		this.y = y;
 	}
 
 	public X getX() {
-		return this.x;
+		return x;
 	}
 
 	public Y getY() {
-		return this.y;
+		return y;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((this.x == null) ? 0 : this.x.hashCode());
-		result = prime * result + ((this.y == null) ? 0 : this.y.hashCode());
+		result = prime * result + ((x == null) ? 0 : x.hashCode());
+		result = prime * result + ((y == null) ? 0 : y.hashCode());
 		return result;
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Override
-	public boolean equals(final Object obj) {
+	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
 		if (obj == null)
 			return false;
-		if (this.getClass() != obj.getClass())
+		if (getClass() != obj.getClass())
 			return false;
-		final Pair other = (Pair) obj;
-		if (this.x == null) {
+		Pair other = (Pair) obj;
+		if (x == null) {
 			if (other.x != null)
 				return false;
-		} else if (!this.x.equals(other.x))
+		} else if (!x.equals(other.x))
 			return false;
-		if (this.y == null) {
+		if (y == null) {
 			if (other.y != null)
 				return false;
-		} else if (!this.y.equals(other.y))
+		} else if (!y.equals(other.y))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "Pair [x=" + this.x + ", y=" + this.y + "]";
+		return "Pair [x=" + x + ", y=" + y + "]";
 	}
 
 }

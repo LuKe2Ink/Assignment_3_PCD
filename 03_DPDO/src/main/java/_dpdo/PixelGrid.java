@@ -1,8 +1,13 @@
 package _dpdo;
 
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.UUID;
 
-public class PixelGrid {
+public class PixelGrid implements Serializable {
+
+	// Generate a random UUID
+	private static final UUID serialVersionUID = UUID.randomUUID();
 	private final int nRows;
 	private final int nColumns;
 	private final int[][] grid;

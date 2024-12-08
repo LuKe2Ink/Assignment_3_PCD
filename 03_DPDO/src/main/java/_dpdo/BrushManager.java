@@ -1,19 +1,19 @@
 package _dpdo;
 
+
 import java.awt.*;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.io.Serializable;
+import java.util.*;
 
-
-public class BrushManager {
+public class BrushManager implements Serializable {
+    // Generate a random UUID
+    private static final UUID serialVersionUID = UUID.randomUUID();
     private static final int BRUSH_SIZE = 10;
     private static final int STROKE_SIZE = 2;
-    private Set<Brush> brushes = new java.util.HashSet<>();
-
+    private Set<Brush> brushes = new HashSet<>();
     void draw(final Graphics2D g) {
-        this.brushes.forEach(brush -> {
+        final Set<Brush> brushesCopy = new HashSet<>(brushes);
+        brushesCopy.forEach(brush -> {
             g.setColor(new Color(brush.color));
             final var circle = new java.awt.geom.Ellipse2D.Double(brush.x - BRUSH_SIZE / 2.0, brush.y - BRUSH_SIZE / 2.0, BRUSH_SIZE, BRUSH_SIZE);
             // draw the polygon
@@ -24,43 +24,26 @@ public class BrushManager {
         });
     }
 
-      Brush getBrushFromInfo(final String[] brushInfo){
-        final Optional<Brush> brush = this.brushes.stream().filter(b -> b.getIdBrush().equals(brushInfo[2])).findFirst();
-        final Brush currentBrush = brush.orElseGet(() -> new Brush(Integer.parseInt(brushInfo[0]), Integer.parseInt(brushInfo[1]), Integer.parseInt(brushInfo[3]), brushInfo[2]));
-        this.brushes.add(currentBrush);
-        return currentBrush;
+    public void addAllBrushes(final Set<Brush> brushes) {
+        this.brushes.clear();
+        this.brushes.addAll(brushes);
     }
 
-    Brush getBrushFromId(final String brushId){
-        return this.brushes.stream().filter(b -> b.getIdBrush().equals(brushId)).toList().get(0);
+    public void addBrush(final Brush brush) {
+        brushes.add(brush);
     }
 
-    void searchAndSet(final String id, final int color){
-        this.brushes = this.brushes.stream().map(brush -> {
-            if(Objects.equals(brush.idBrush, id)) {
-                brush.setColor(color);
-            }
-            return brush;
-        }).collect(Collectors.toSet());
-    }
-    void addBrush(final Brush brush) {
-        this.brushes.add(brush);
-    }
+    public static class Brush implements Serializable{
 
-    void removeBrush(final Brush brush) {
-        this.brushes.remove(brush);
-    }
-
-    public static class Brush {
+        // Generate a random UUID
+        private static final UUID serialVersionUID = UUID.randomUUID();
         private int x, y;
         private int color;
-        private final String idBrush;
 
-        public Brush(final int x, final int y, final int color, final String idBrush) {
+        public Brush(final int x, final int y, final int color) {
             this.x = x;
             this.y = y;
             this.color = color;
-            this.idBrush = idBrush;
         }
 
         public void updatePosition(final int x, final int y) {
@@ -77,12 +60,11 @@ public class BrushManager {
         public int getColor(){
             return this.color;
         }
-
-        public void setColor(final int color) {
+        public void setColor(final int color){
             this.color = color;
         }
-        public String getIdBrush(){
-            return this.idBrush;
+        public UUID getBrushId() {
+            return serialVersionUID;
         }
     }
 }

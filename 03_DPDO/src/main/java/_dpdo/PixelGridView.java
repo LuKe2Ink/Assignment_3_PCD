@@ -5,7 +5,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.image.BufferedImage;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class PixelGridView extends JFrame {
 
 	private final List<ColorChangeListener> colorChangeListeners;
     
-    public PixelGridView(PixelGrid grid, BrushManager brushManager, int w, int h, String identifier){
+    public PixelGridView(PixelGrid grid, BrushManager brushManager, int w, int h) throws IOException {
 		this.grid = grid;
 		this.w = w;
 		this.h = h;
@@ -35,7 +35,7 @@ public class PixelGridView extends JFrame {
 		colorChangeButton.addActionListener(e -> {
 			var color = JColorChooser.showDialog(this, "Choose a color", Color.BLACK);
 			if (color != null) {
-				colorChangeListeners.forEach(l -> l.colorChanged(identifier, color.getRGB()));
+				colorChangeListeners.forEach(l -> l.colorChanged(color.getRGB()));
 			}
 		});
 		// add panel and a button to the button to change color
@@ -64,9 +64,24 @@ public class PixelGridView extends JFrame {
 	public void addColorChangedListener(ColorChangeListener l) { colorChangeListeners.add(l); }
 
 	private void hideCursor() {
-		var cursorImage = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-		var blankCursor = Toolkit.getDefaultToolkit()
-				.createCustomCursor(cursorImage, new Point(0, 0), "blank cursor");
+		var cursorImage = "";
+		try (FileOutputStream fileOut = new FileOutputStream("image.ser");
+			 ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+			out.writeObject(cursorImage);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		try (FileInputStream fileIn = new FileInputStream("image.ser");
+			 ObjectInputStream in = new ObjectInputStream(fileIn)) {
+			cursorImage = (String) in.readObject();
+			// Use the deserialized image object as needed
+		} catch (IOException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		var blankCursor = new Cursor(Cursor.HAND_CURSOR);
 		// Set the blank cursor to the JFrame.
 		this.getContentPane().setCursor(blankCursor);
 	}
@@ -79,7 +94,13 @@ public class PixelGridView extends JFrame {
 				int dy = h / grid.getNumRows();
 				int col = e.getX() / dx;
 				int row = e.getY() / dy;
-				pixelListeners.forEach(l -> l.selectedCell(col, row));
+				pixelListeners.forEach(l -> {
+					try {
+						l.selectedCell(col, row);
+					} catch (IOException ex) {
+						throw new RuntimeException(ex);
+					}
+				});
 			}
 
 			@Override
@@ -103,7 +124,13 @@ public class PixelGridView extends JFrame {
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				movedListener.forEach(l -> l.mouseMoved(e.getX(), e.getY()));
+				movedListener.forEach(l -> {
+					try {
+						l.mouseMoved(e.getX(), e.getY());
+					} catch (IOException ex) {
+						throw new RuntimeException(ex);
+					}
+				});
 			}
 		};
 	}
