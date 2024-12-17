@@ -1,5 +1,8 @@
 package _dpdo;
 
+import _dpdo.server.interfaces.BrushService;
+import _dpdo.server.interfaces.GridService;
+
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

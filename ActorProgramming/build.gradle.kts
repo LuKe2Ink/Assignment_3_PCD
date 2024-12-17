@@ -20,7 +20,8 @@ dependencies {
 }
 
 tasks.register<JavaExec>("run") {
-    mainClass.set("it.unibo.ppc.AkkaQuickstart")
+    mainClass.set("it.unibo.ppc.StartGUI")
+    // mainClass.set("it.unibo.ppc.AkkaQuickstart")
     classpath = sourceSets.main.get().runtimeClasspath
 }
 

@@ -1,10 +1,14 @@
-package _dpdo;
+package _dpdo.server;
+
+import _dpdo.BrushManager;
+import _dpdo.server.interfaces.BrushService;
+import _dpdo.PixelArt;
 
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BrushServiceImpl implements BrushService{
+public class BrushServiceImpl implements BrushService {
 
     //list with the client instances
     private List<PixelArt> clients = new ArrayList<>();
