@@ -1,4 +1,7 @@
-package _dpdo;
+package _dpdo.server;
+
+import _dpdo.server.interfaces.BrushService;
+import _dpdo.server.interfaces.GridService;
 
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;

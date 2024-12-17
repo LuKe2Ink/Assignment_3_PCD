@@ -1,4 +1,8 @@
-package _dpdo;
+package _dpdo.server;
+
+import _dpdo.server.interfaces.GridService;
+import _dpdo.Pair;
+import _dpdo.PixelArt;
 
 import java.rmi.RemoteException;
 import java.util.*;

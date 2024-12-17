@@ -1,5 +1,8 @@
-package _dpdo;
+package _dpdo.server.interfaces;
 
+
+import _dpdo.BrushManager;
+import _dpdo.PixelArt;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
